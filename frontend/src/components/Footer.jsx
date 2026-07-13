@@ -29,9 +29,17 @@ export default function Footer() {
           <div>
             <h4 className="font-semibold text-slate-200 mb-3">Contact</h4>
             <ul className="space-y-2 text-sm text-slate-400">
-              <li>📧 hello@eduverse.ai</li>
-              <li>🌐 eduverse.ai</li>
-              <li>📍 Built with FastAPI + React</li>
+              <p>
+  Contact: Yuvraj Verma
+</p>
+
+<p>
+  Created & Designed by Yuvraj Verma
+</p>
+
+<p>
+  © All rights reserved to Yuvraj Verma
+</p>
             </ul>
           </div>
         </div>

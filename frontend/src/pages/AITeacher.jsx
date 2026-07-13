@@ -1,6 +1,11 @@
 import { useState } from 'react'
 import { api } from '../api/client.js'
 import Loader from '../components/Loader.jsx'
+function speakText(text) {
+  const speech = new SpeechSynthesisUtterance(text)
+  speech.lang = 'en-US'
+  window.speechSynthesis.speak(speech)
+}
 
 function buildCopyText(result) {
   if (!result) return ''
@@ -117,9 +122,19 @@ export default function AITeacher() {
           </div>
 
           <div className="glass-card p-6">
-            <h3 className="text-lg font-semibold text-indigo-300 mb-3">💡 Easy Explanation</h3>
-            <p className="text-slate-300 leading-relaxed">{result.easy_explanation}</p>
-          </div>
+  <h3 className="text-lg font-semibold text-indigo-300 mb-3">💡 Easy Explanation</h3>
+
+  <p className="text-slate-300 leading-relaxed">
+    {result.easy_explanation}
+  </p>
+
+  <button
+    onClick={() => speakText(result.easy_explanation)}
+    className="btn-secondary text-sm py-2 px-4 mt-4"
+  >
+    🔊 Listen
+  </button>
+</div>
 
           <div className="glass-card p-6">
             <h3 className="text-lg font-semibold text-indigo-300 mb-3">🔑 Key Points</h3>

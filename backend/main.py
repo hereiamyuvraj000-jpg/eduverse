@@ -20,9 +20,10 @@ from pydantic import BaseModel, Field
 from dotenv import load_dotenv
 
 from database import init_db, get_db
-from ai_client import call_openrouter, extract_json, AIError
+from ai_client import call_groq, extract_json, AIError
 
 load_dotenv()
+print("API Key loaded:", os.getenv("GROQ_API_KEY"))
 
 app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
 
@@ -30,12 +31,16 @@ FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[FRONTEND_ORIGIN, "http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 
 @app.on_event("startup")
 def on_startup():
@@ -108,7 +113,7 @@ async def ai_teacher(req: TopicRequest):
     user_prompt = f"Topic: {req.topic}\n\nGenerate the full JSON object as instructed."
 
     try:
-        raw = await call_openrouter(TEACHER_SYSTEM_PROMPT, user_prompt, temperature=0.6)
+        raw = await call_groq(TEACHER_SYSTEM_PROMPT, user_prompt, temperature=0.6)
         data = extract_json(raw)
     except AIError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
@@ -158,7 +163,7 @@ async def generate_quiz(req: QuizGenerateRequest):
     )
 
     try:
-        raw = await call_openrouter(QUIZ_SYSTEM_PROMPT, user_prompt, temperature=0.7)
+        raw = await call_groq(QUIZ_SYSTEM_PROMPT, user_prompt, temperature=0.7)
         data = extract_json(raw)
     except AIError as exc:
         raise HTTPException(status_code=502, detail=str(exc))
@@ -271,7 +276,7 @@ async def study_planner(req: PlannerRequest):
     )
 
     try:
-        raw = await call_openrouter(PLANNER_SYSTEM_PROMPT, user_prompt, temperature=0.5)
+        raw = await call_groq(PLANNER_SYSTEM_PROMPT, user_prompt, temperature=0.5)
         data = extract_json(raw)
     except AIError as exc:
         raise HTTPException(status_code=502, detail=str(exc))

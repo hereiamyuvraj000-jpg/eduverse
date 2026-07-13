@@ -26,7 +26,9 @@ load_dotenv()
 print("API Key loaded:", os.getenv("GROQ_API_KEY"))
 
 app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
-
+@app.get("/")
+def home():
+    return {"message": "EduVerse AI Backend is running"}
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
 app.add_middleware(

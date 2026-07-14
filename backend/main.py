@@ -126,14 +126,40 @@ async def ai_teacher(req: TopicRequest):
     user_prompt = f"Topic: {req.topic}\n\nGenerate the full JSON object as instructed."
 
     try:
-        raw = await call_groq(TEACHER_SYSTEM_PROMPT, user_prompt, temperature=0.6)
-        data = extract_json(raw)
-    except AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc))
+        raw = await call_groq(
+            TEACHER_SYSTEM_PROMPT,
+            user_prompt,
+            temperature=0.2
+        )
 
-    required_keys = {"easy_explanation", "key_points", "examples", "quiz_questions", "summary"}
+        try:
+            data = extract_json(raw)
+
+        except Exception:
+            raise HTTPException(
+                status_code=502,
+                detail=f"AI returned invalid JSON:\n{raw}"
+            )
+
+    except AIError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc)
+        )
+
+    required_keys = {
+        "easy_explanation",
+        "key_points",
+        "examples",
+        "quiz_questions",
+        "summary"
+    }
+
     if not required_keys.issubset(data.keys()):
-        raise HTTPException(status_code=502, detail="AI response missing required fields.")
+        raise HTTPException(
+            status_code=502,
+            detail="AI response missing required fields."
+        )
 
     with get_db() as db:
         db.execute(
@@ -141,9 +167,10 @@ async def ai_teacher(req: TopicRequest):
             (req.topic, json.dumps(data)),
         )
 
-    return {"topic": req.topic, **data}
-
-
+    return {
+        "topic": req.topic,
+        **data
+    }
 # --------------------------------------------------------------------------
 # AI Quiz
 # --------------------------------------------------------------------------

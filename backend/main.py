@@ -35,11 +35,9 @@ FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://eduverse-fbwa174up-tetre1.vercel.app",
         "http://localhost:5173",
         "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "https://eduverse-one-lime.vercel.app",
     ],
     allow_credentials=True,
     allow_methods=["*"],

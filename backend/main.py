@@ -38,7 +38,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:5174",
         "http://127.0.0.1:5174",
-        "https://eduverse-8z2n923u6-tetre1.vercel.app",
+        "https://eduverse-one-lime.vercel.ap",
     ],
     allow_credentials=True,
     allow_methods=["*"],

@@ -31,20 +31,6 @@ app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.get("/")
-def home():
-    return {"message": "EduVerse AI Backend is running"}
-    
-FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
-
-app.add_middleware(
-    CORSMiddleware,
     allow_origins=[
         "https://eduverse-one-lime.vercel.app",
         "https://eduverse-fbwa174up-tetre1.vercel.app",
@@ -55,10 +41,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-@app.on_event("startup")
-def on_startup():
-    init_db()
 
+
+@app.get("/")
+def home():
+    return {"message": "EduVerse AI Backend is running"}
 
 # --------------------------------------------------------------------------
 # Schemas

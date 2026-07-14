@@ -9,6 +9,7 @@ Endpoints:
   POST /api/planner        -> Generate a daily study timetable
 """
 
+from curses import raw
 import os
 import json
 from datetime import date, datetime
@@ -166,11 +167,26 @@ async def generate_quiz(req: QuizGenerateRequest):
     )
 
     try:
-        raw = await call_groq(QUIZ_SYSTEM_PROMPT, user_prompt, temperature=0.7)
-        data = extract_json(raw)
-    except AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc))
+    raw = await call_groq(
+        TEACHER_SYSTEM_PROMPT,
+        user_prompt,
+        temperature=0.2
+    )
 
+    try:
+        data = extract_json(raw)
+
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail=f"AI returned invalid JSON:\n{raw}"
+        )
+
+    except AIError as exc:
+        raise HTTPException(
+        status_code=502,
+        detail=str(exc)
+    )
     questions = data.get("questions")
     if not questions or not isinstance(questions, list):
         raise HTTPException(status_code=502, detail="AI response missing 'questions' list.")

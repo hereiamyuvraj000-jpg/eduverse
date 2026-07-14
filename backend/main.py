@@ -26,10 +26,21 @@ from ai_client import call_groq, extract_json, AIError
 load_dotenv()
 print("API Key loaded:", os.getenv("GROQ_API_KEY"))
 
+
 app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.get("/")
 def home():
     return {"message": "EduVerse AI Backend is running"}
+    
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
 
 app.add_middleware(

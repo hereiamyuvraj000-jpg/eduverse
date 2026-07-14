@@ -52,6 +52,7 @@ async def call_groq(system_prompt, user_prompt, temperature=0.7):
 def extract_json(text):
     cleaned = text.strip()
 
+    # Remove markdown code fences if AI adds them
     cleaned = re.sub(
         r"^```(?:json)?",
         "",
@@ -65,12 +66,16 @@ def extract_json(text):
         cleaned
     )
 
+    cleaned = cleaned.strip()
+
     try:
         return json.loads(cleaned)
+
     except json.JSONDecodeError:
+        # Try extracting JSON object from extra text
         match = re.search(r"\{.*\}", cleaned, re.DOTALL)
 
         if match:
             return json.loads(match.group())
 
-        raise AIError("AI returned invalid JSON:\n" + cleaned)
+        raise AIError("AI returned invalid JSON")

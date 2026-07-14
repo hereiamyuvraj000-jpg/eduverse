@@ -9,7 +9,7 @@ Endpoints:
   POST /api/planner        -> Generate a daily study timetable
 """
 
-from curses import raw
+
 import os
 import json
 from datetime import date, datetime
@@ -162,44 +162,50 @@ anything outside the JSON object."""
 @app.post("/api/quiz/generate")
 async def generate_quiz(req: QuizGenerateRequest):
     user_prompt = (
-        f"Topic: {req.topic}\nNumber of questions: {req.num_questions}\n\n"
+        f"Topic: {req.topic}\n"
+        f"Number of questions: {req.num_questions}\n\n"
         "Generate the full JSON object as instructed."
     )
 
     try:
-    raw = await call_groq(
-        TEACHER_SYSTEM_PROMPT,
-        user_prompt,
-        temperature=0.2
-    )
+        raw = await call_groq(
+            QUIZ_SYSTEM_PROMPT,
+            user_prompt,
+            temperature=0.2
+        )
 
-    try:
         data = extract_json(raw)
+
+    except AIError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc)
+        )
 
     except Exception:
         raise HTTPException(
             status_code=502,
-            detail=f"AI returned invalid JSON:\n{raw}"
+            detail="AI returned invalid JSON."
         )
 
-    except AIError as exc:
-        raise HTTPException(
-        status_code=502,
-        detail=str(exc)
-    )
     questions = data.get("questions")
+
     if not questions or not isinstance(questions, list):
-        raise HTTPException(status_code=502, detail="AI response missing 'questions' list.")
+        raise HTTPException(
+            status_code=502,
+            detail="AI response missing 'questions' list."
+        )
 
     with get_db() as db:
         db.execute(
             "INSERT INTO quiz_history (topic, questions) VALUES (?, ?)",
-            (req.topic, json.dumps(questions)),
+            (req.topic, json.dumps(questions))
         )
 
-    return {"topic": req.topic, "questions": questions}
-
-
+    return {
+        "topic": req.topic,
+        "questions": questions
+    }
 @app.post("/api/quiz/submit")
 def submit_quiz(req: QuizSubmitRequest):
     total = len(req.questions)
@@ -275,11 +281,18 @@ async def study_planner(req: PlannerRequest):
     try:
         exam_dt = datetime.strptime(req.exam_date, "%Y-%m-%d").date()
     except ValueError:
-        raise HTTPException(status_code=400, detail="exam_date must be in YYYY-MM-DD format.")
+        raise HTTPException(
+            status_code=400,
+            detail="exam_date must be in YYYY-MM-DD format."
+        )
 
     today = date.today()
+
     if exam_dt < today:
-        raise HTTPException(status_code=400, detail="exam_date must be today or in the future.")
+        raise HTTPException(
+            status_code=400,
+            detail="exam_date must be today or in the future."
+        )
 
     days_available = (exam_dt - today).days + 1
     subjects_str = ", ".join(req.subjects)
@@ -290,34 +303,22 @@ async def study_planner(req: PlannerRequest):
         f"Days available (inclusive): {days_available}\n"
         f"Subjects: {subjects_str}\n"
         f"Hours available per day: {req.hours_per_day}\n\n"
-        "Generate the full JSON object as instructed, with one entry in 'days' for each "
-        "calendar day from today through the exam date inclusive."
+        "Generate the full JSON object as instructed."
     )
 
     try:
-        raw = await call_groq(PLANNER_SYSTEM_PROMPT, user_prompt, temperature=0.5)
-        data = extract_json(raw)
-    except AIError as exc:
-        raise HTTPException(status_code=502, detail=str(exc))
-
-    if "days" not in data:
-        raise HTTPException(status_code=502, detail="AI response missing 'days' field.")
-
-    with get_db() as db:
-        db.execute(
-            "INSERT INTO study_plans (subjects, hours_per_day, exam_date, plan) VALUES (?, ?, ?, ?)",
-            (subjects_str, req.hours_per_day, req.exam_date, json.dumps(data)),
+        raw = await call_groq(
+            PLANNER_SYSTEM_PROMPT,
+            user_prompt,
+            temperature=0.2
         )
 
-    return {
-        "subjects": req.subjects,
-        "hours_per_day": req.hours_per_day,
-        "exam_date": req.exam_date,
-        **data,
-    }
+        data = extract_json(raw)
 
+    except AIError as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=str(exc)
+        )
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    return data

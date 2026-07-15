@@ -24,8 +24,7 @@ from database import init_db, get_db
 from ai_client import call_groq, extract_json, AIError
 
 load_dotenv()
-
-
+init_db()
 
 app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
 @app.get("/cors-test")

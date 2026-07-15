@@ -31,8 +31,8 @@ app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origin_regex=r"https://eduverse-.*\.vercel\.app",
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )

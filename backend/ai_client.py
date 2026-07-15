@@ -29,20 +29,20 @@ async def call_groq(system_prompt, user_prompt, temperature=0.7):
 
     try:
         response = client.chat.completions.create(
-            model=model,
-            temperature=temperature,
-            messages=[
-                {
-                    "role": "system",
-                    "content": system_prompt
-                },
-                {
-                    "role": "user",
-                    "content": user_prompt
-                }
-            ]
-        )
-
+    model=model,
+    temperature=0,
+    response_format={"type": "json_object"},
+    messages=[
+        {
+            "role": "system",
+            "content": system_prompt
+        },
+        {
+            "role": "user",
+            "content": user_prompt
+        }
+    ]
+)
         return response.choices[0].message.content
 
     except Exception as e:
@@ -50,32 +50,22 @@ async def call_groq(system_prompt, user_prompt, temperature=0.7):
 
 
 def extract_json(text):
-    cleaned = text.strip()
-
-    # Remove markdown code fences if AI adds them
-    cleaned = re.sub(
-        r"^```(?:json)?",
-        "",
-        cleaned,
-        flags=re.IGNORECASE
-    )
-
-    cleaned = re.sub(
-        r"```$",
-        "",
-        cleaned
-    )
-
-    cleaned = cleaned.strip()
-
     try:
-        return json.loads(cleaned)
+        # Remove markdown code fences
+        text = re.sub(r"```json", "", text, flags=re.IGNORECASE)
+        text = re.sub(r"```", "", text)
+        text = text.strip()
 
-    except json.JSONDecodeError:
-        # Try extracting JSON object from extra text
-        match = re.search(r"\{.*\}", cleaned, re.DOTALL)
+        # Extract the first JSON object
+        start = text.find("{")
+        end = text.rfind("}")
 
-        if match:
-            return json.loads(match.group())
+        if start == -1 or end == -1:
+            raise AIError("No JSON found in AI response.")
 
-        raise AIError("AI returned invalid JSON")
+        json_text = text[start:end + 1]
+
+        return json.loads(json_text)
+
+    except Exception as e:
+        raise AIError(f"AI returned invalid JSON: {e}")

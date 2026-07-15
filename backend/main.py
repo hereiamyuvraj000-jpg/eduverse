@@ -23,6 +23,11 @@ logger = logging.getLogger("eduverse")
 # ============================================================
 
 app = FastAPI(title="EduVerse AI", version="2.0.0")
+@app.get("/")
+async def home():
+    return {
+        "message": "EduVerse AI Backend Running"
+    }
 
 _allowed_origins_env = os.environ.get("ALLOWED_ORIGINS", "*")
 if _allowed_origins_env.strip() == "*":

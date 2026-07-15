@@ -24,7 +24,7 @@ from database import init_db, get_db
 from ai_client import call_groq, extract_json, AIError
 
 load_dotenv()
-print("API Key loaded:", os.getenv("GROQ_API_KEY"))
+
 
 
 app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
@@ -32,6 +32,7 @@ app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://eduverse-phi-khaki.vercel.app",
         "https://eduverse-one-lime.vercel.app",
         "https://eduverse-fbwa174up-tetre1.vercel.app",
         "http://localhost:5173",

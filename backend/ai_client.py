@@ -1,7 +1,9 @@
 import os
 import json
 import re
+from dotenv import load_dotenv
 from groq import Groq
+load_dotenv()
 
 
 class AIError(Exception):

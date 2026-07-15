@@ -37,6 +37,23 @@ def get_connection() -> Iterator[sqlite3.Connection]:
         raise
     finally:
         conn.close()
+def get_db():
+    """
+    FastAPI database dependency.
+    Provides a SQLite connection to API routes.
+    """
+    conn = sqlite3.connect(
+        DB_PATH,
+        timeout=30,
+        check_same_thread=False
+    )
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+
+    try:
+        yield conn
+    finally:
+        conn.close()        
 
 
 def init_db() -> None:
@@ -62,20 +79,17 @@ def init_db() -> None:
         )
 
         cur.execute(
-            """
-            CREATE TABLE IF NOT EXISTS quiz_history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                student_id TEXT,
-                topic TEXT NOT NULL,
-                student_level TEXT NOT NULL,
-                difficulty TEXT NOT NULL,
-                question_type TEXT NOT NULL,
-                num_questions INTEGER NOT NULL,
-                questions_json TEXT NOT NULL,
-                created_at TEXT NOT NULL
-            )
-            """
-        )
+    "CREATE TABLE IF NOT EXISTS quiz_history ("
+    "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+    "student_id TEXT, "
+    "topic TEXT NOT NULL, "
+    "student_level TEXT NOT NULL, "
+    "difficulty TEXT NOT NULL, "
+    "question_type TEXT NOT NULL, "
+    "num_questions INTEGER NOT NULL, "
+    "questions_json TEXT NOT NULL, "
+    "created_at TEXT NOT NULL)"
+)
 
         cur.execute(
             """

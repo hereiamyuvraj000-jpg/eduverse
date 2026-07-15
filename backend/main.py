@@ -299,11 +299,24 @@ def save_teacher_history(db: sqlite3.Connection, topic: str, student_level: str,
 def save_quiz_history(db: sqlite3.Connection, quiz_record: Dict[str, Any]) -> int:
     try:
         cursor = db.cursor()
+
         cursor.execute(
-            "INSERT INTO quiz_history (topic, difficulty, question_type, question_count, questions, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
+            """
+            INSERT INTO quiz_history
+            (
+                topic,
+                student_level,
+                difficulty,
+                question_type,
+                num_questions,
+                questions_json,
+                created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
             (
                 quiz_record["topic"],
+                quiz_record.get("student_level", "Unknown"),
                 quiz_record["difficulty"],
                 quiz_record["question_type"],
                 quiz_record["question_count"],
@@ -311,22 +324,33 @@ def save_quiz_history(db: sqlite3.Connection, quiz_record: Dict[str, Any]) -> in
                 now_iso(),
             ),
         )
+
         db.commit()
         return cursor.lastrowid
+
     except Exception as e:
         logger.error(f"Failed to save quiz_history: {e}")
         return -1
-
 
 def save_quiz_attempt(db: sqlite3.Connection, quiz_id: int, results: List[Dict[str, Any]],
                        correct_count: int, total_questions: int, score_percent: float) -> int:
     try:
         cursor = db.cursor()
         cursor.execute(
-            "INSERT INTO quiz_attempts (quiz_id, results, correct_count, total_questions, score_percent, created_at) "
-            "VALUES (?, ?, ?, ?, ?, ?)",
-            (quiz_id, json.dumps(results), correct_count, total_questions, score_percent, now_iso()),
-        )
+    "INSERT INTO quiz_attempts "
+    "(quiz_id, answers_json, score, total_questions, correct_count, incorrect_count, results_json, created_at) "
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+    (
+        quiz_id,
+        json.dumps({}),
+        score_percent,
+        total_questions,
+        correct_count,
+        total_questions - correct_count,
+        json.dumps(results),
+        now_iso(),
+    ),
+)
         db.commit()
         return cursor.lastrowid
     except Exception as e:

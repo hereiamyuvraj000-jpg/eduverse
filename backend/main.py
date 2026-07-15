@@ -28,7 +28,9 @@ load_dotenv()
 
 
 app = FastAPI(title="EduVerse AI Lite API", version="1.0.0")
-
+@app.get("/cors-test")
+def cors_test():
+    return {"message": "CORS middleware reached"}
 app.add_middleware(
     CORSMiddleware,
     allow_origin_regex=r"https://eduverse-.*\.vercel\.app",
